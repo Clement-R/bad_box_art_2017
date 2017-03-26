@@ -12,7 +12,7 @@ public class DemoScene : MonoBehaviour
 	public float inAirDamping = 5f;
 	public float jumpHeight = 3f;
 
-    bool isAttacking = false;
+    public bool isAttacking = false;
 
 	[HideInInspector]
 	private float normalizedHorizontalSpeed = 0;
@@ -51,13 +51,11 @@ public class DemoScene : MonoBehaviour
 
 	void onTriggerEnterEvent( Collider2D col )
 	{
-        // Debug.Log("onTriggerEnterEvent: " + col.gameObject.name);
 	}
 
 
 	void onTriggerExitEvent( Collider2D col )
 	{
-		// Debug.Log( "onTriggerExitEvent: " + col.gameObject.name );
 	}
 
     void onTriggerStayEvent(Collider2D col) {

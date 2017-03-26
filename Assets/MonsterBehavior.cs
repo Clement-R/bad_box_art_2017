@@ -22,6 +22,11 @@ public class MonsterBehavior : MonoBehaviour {
     private RaycastHit2D _lastControllerColliderHit;
     private Vector3 _velocity;
 
+    [SerializeField]
+    private int health = 3;
+
+    private bool touched = false;
+
 
     void Awake() {
         _animator = GetComponent<Animator>();
@@ -31,6 +36,7 @@ public class MonsterBehavior : MonoBehaviour {
         _controller.onControllerCollidedEvent += onControllerCollider;
         _controller.onTriggerEnterEvent += onTriggerEnterEvent;
         _controller.onTriggerExitEvent += onTriggerExitEvent;
+        _controller.onTriggerStayEvent += onTriggerStayEvent;
     }
 
 
@@ -42,21 +48,36 @@ public class MonsterBehavior : MonoBehaviour {
             return;
 
         // logs any collider hits if uncommented. it gets noisy so it is commented out for the demo
-        // Debug.Log( "flags: " + _controller.collisionState + ", hit.normal: " + hit.normal );
     }
 
 
     void onTriggerEnterEvent(Collider2D col) {
-        // Debug.Log("onTriggerEnterEvent: " + col.gameObject.name);
+    }
+
+    void onTriggerStayEvent(Collider2D col) {
+        if (col.tag == "Player") {
+            if (isAttacking) {
+                Debug.Log("Enemy touch player");
+                isAttacking = false;
+            }
+
+            if(col.GetComponent<DemoScene>().isAttacking) {
+                Debug.Log("Touched");
+                takeDamage();
+            }
+        }
     }
 
 
     void onTriggerExitEvent(Collider2D col) {
-        // Debug.Log("onTriggerExitEvent: " + col.gameObject.name);
     }
 
     #endregion
 
+
+    void takeDamage() {
+        touched = true;
+    }
 
     // the Update loop contains a very simple example of moving the character around and controlling the animation
     void Update() {
@@ -98,6 +119,13 @@ public class MonsterBehavior : MonoBehaviour {
             isAttacking = true;
         }
 
+        if(touched) {
+            _velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
+            _velocity.x = 100;
+            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            touched = false;
+        }
+
         // apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
         var smoothedMovementFactor = _controller.isGrounded ? groundDamping : inAirDamping; // how fast do we change direction?
         _velocity.x = Mathf.Lerp(_velocity.x, normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor);
@@ -107,10 +135,12 @@ public class MonsterBehavior : MonoBehaviour {
 
         // if holding down bump up our movement amount and turn off one way platform detection for a frame.
         // this lets us jump down through one way platforms
+        /*
         if (_controller.isGrounded && Input.GetKey(KeyCode.DownArrow)) {
             _velocity.y *= 3f;
             _controller.ignoreOneWayPlatformsThisFrame = true;
         }
+        */
 
         _controller.move(_velocity * Time.deltaTime);
 
