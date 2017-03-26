@@ -97,11 +97,14 @@ public class MonsterBehavior : MonoBehaviour {
             var rb2D = GetComponent<Rigidbody2D>();
             _aSource.clip = death;
             _aSource.Play();
-            rb2D.velocity = Vector2.zero;
             _animator.SetBool("run", false);
             _animator.SetBool("attack", false);
-            rb2D.AddForce(Vector2.up * 50000, ForceMode2D.Impulse);
-            rb2D.AddTorque(90f);
+            rb2D.velocity = Vector2.zero;
+            rb2D.bodyType = RigidbodyType2D.Dynamic;
+            var direction = Mathf.Sign(gameObject.transform.position.x - GameManager.Instance.player.transform.position.x);
+            rb2D.AddForce(new Vector2(0.5f * direction, 0.25f) * 750, ForceMode2D.Impulse);
+            rb2D.gravityScale = 90;
+            rb2D.MoveRotation(-direction * 90);
             _diedAt = Time.realtimeSinceStartup;
         }
 
@@ -115,7 +118,6 @@ public class MonsterBehavior : MonoBehaviour {
             _diedAt = Time.realtimeSinceStartup;
         }
         
-
         if(_dead && Time.realtimeSinceStartup > _diedAt + 2f) {
             GameObject.Destroy(gameObject);
             return;
