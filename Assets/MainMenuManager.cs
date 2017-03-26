@@ -84,7 +84,7 @@ public class MainMenuManager : MonoBehaviour {
         credits.SetActive(false);
         instructions.SetActive(true);
 
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(5.0f);
 
         SceneManager.LoadScene("main");
     }
