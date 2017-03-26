@@ -110,6 +110,12 @@ public class MonsterBehavior : MonoBehaviour {
 
     // the Update loop contains a very simple example of moving the character around and controlling the animation
     void Update() {
+        if(gameObject.transform.position.y <= -100) {
+            _dead = true;
+            _diedAt = Time.realtimeSinceStartup;
+        }
+        
+
         if(_dead && Time.realtimeSinceStartup > _diedAt + 2f) {
             GameObject.Destroy(gameObject);
             return;
