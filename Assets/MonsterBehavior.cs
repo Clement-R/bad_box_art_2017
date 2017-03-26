@@ -43,6 +43,8 @@ public class MonsterBehavior : MonoBehaviour {
         _aSource = GetComponent<AudioSource>();
         _player = GameObject.Find("Player").GetComponent<PlayerBehavior>();
 
+        _nextHit = Time.realtimeSinceStartup;
+
         // listen to some events for illustration purposes
         _controller.onControllerCollidedEvent += onControllerCollider;
         _controller.onTriggerEnterEvent += onTriggerEnterEvent;
@@ -65,13 +67,11 @@ public class MonsterBehavior : MonoBehaviour {
     void onTriggerStayEvent(Collider2D col) {
         if (col.tag == "Player") {
             if (isAttacking) {
-                Debug.Log("Enemy touch player");
                 isAttacking = false;
                 col.gameObject.GetComponent<PlayerBehavior>().takeDamage();
             }
 
             if(col.GetComponent<DemoScene>().isAttacking) {
-                Debug.Log("Touched");
                 takeDamage();
             }
         }
@@ -89,6 +89,7 @@ public class MonsterBehavior : MonoBehaviour {
             return;
         touched = true;
         health--;
+
         if(health <= 0){
             _controller.enabled = false;
             _ia.enabled = false;
@@ -98,12 +99,18 @@ public class MonsterBehavior : MonoBehaviour {
             _aSource.Play();
             _animator.SetBool("run", false);
             _animator.SetBool("attack", false);
-            /*
+
             var rb2D = GetComponent<Rigidbody2D>();
             rb2D.velocity = Vector2.zero;
             rb2D.AddForce(Vector2.up * 50000, ForceMode2D.Impulse);
             rb2D.AddTorque(90f);
-            */
+
+            rb2D.velocity = Vector2.zero;
+            rb2D.bodyType = RigidbodyType2D.Dynamic;
+            var direction = Mathf.Sign(gameObject.transform.position.x - GameManager.Instance.player.transform.position.x);
+            rb2D.AddForce(new Vector2(0.5f * direction, 0.25f) * 750, ForceMode2D.Impulse);
+            rb2D.gravityScale = 90;
+            rb2D.MoveRotation(-direction * 90);
 
             _diedAt = Time.realtimeSinceStartup;
         }
@@ -117,9 +124,8 @@ public class MonsterBehavior : MonoBehaviour {
             _dead = true;
             _diedAt = Time.realtimeSinceStartup;
         }
-        
 
-        if(_dead && Time.realtimeSinceStartup > _diedAt) {
+        if(_dead && Time.realtimeSinceStartup > _diedAt + 2.0f) {
             _player.IncrementScore();
             GameObject.Destroy(gameObject);
             return;
@@ -169,19 +175,21 @@ public class MonsterBehavior : MonoBehaviour {
             isAttacking = true;
         }
 
-        if (touched) {
+        if (touched && health > 0) {
             _velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
-            _velocity.x = 100000000;
+            _velocity.x = 100 * -transform.localScale.x;
             transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
             
             touched = false;
-            return;
+            
         }
 
         // apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
         var smoothedMovementFactor = _controller.isGrounded ? groundDamping : inAirDamping; // how fast do we change direction?
-        _velocity.x = Mathf.Lerp(_velocity.x, normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor);
-
+        if(Time.realtimeSinceStartup > _nextHit) {
+            _velocity.x = Mathf.Lerp(_velocity.x, normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor);
+        }
+        
         // apply gravity before moving
         _velocity.y += gravity * Time.deltaTime;
 
