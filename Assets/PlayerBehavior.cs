@@ -106,4 +106,8 @@ public class PlayerBehavior : MonoBehaviour {
 
         gameOver = true;
     }
+
+    public void IncrementScore() {
+        _score++;
+    }
 }
