@@ -34,12 +34,14 @@ public class MonsterBehavior : MonoBehaviour {
     private float _nextHit;
     private bool _dead = false;
     private float _diedAt;
+    private PlayerBehavior _player;
 
     void Awake() {
         _animator = GetComponent<Animator>();
         _controller = GetComponent<CharacterController2D>();
         _ia = GetComponent<MonsterIA>();
         _aSource = GetComponent<AudioSource>();
+        _player = GameObject.Find("Player").GetComponent<PlayerBehavior>();
 
         // listen to some events for illustration purposes
         _controller.onControllerCollidedEvent += onControllerCollider;
@@ -55,10 +57,7 @@ public class MonsterBehavior : MonoBehaviour {
         // bail out on plain old ground hits cause they arent very interesting
         if (hit.normal.y == 1f)
             return;
-
-        // logs any collider hits if uncommented. it gets noisy so it is commented out for the demo
     }
-
 
     void onTriggerEnterEvent(Collider2D col) {
     }
@@ -94,14 +93,18 @@ public class MonsterBehavior : MonoBehaviour {
             _controller.enabled = false;
             _ia.enabled = false;
             _dead = true;
-            var rb2D = GetComponent<Rigidbody2D>();
+            
             _aSource.clip = death;
             _aSource.Play();
-            rb2D.velocity = Vector2.zero;
             _animator.SetBool("run", false);
             _animator.SetBool("attack", false);
+            /*
+            var rb2D = GetComponent<Rigidbody2D>();
+            rb2D.velocity = Vector2.zero;
             rb2D.AddForce(Vector2.up * 50000, ForceMode2D.Impulse);
             rb2D.AddTorque(90f);
+            */
+
             _diedAt = Time.realtimeSinceStartup;
         }
 
@@ -116,7 +119,8 @@ public class MonsterBehavior : MonoBehaviour {
         }
         
 
-        if(_dead && Time.realtimeSinceStartup > _diedAt + 2f) {
+        if(_dead && Time.realtimeSinceStartup > _diedAt) {
+            _player.IncrementScore();
             GameObject.Destroy(gameObject);
             return;
         }
@@ -166,16 +170,11 @@ public class MonsterBehavior : MonoBehaviour {
         }
 
         if (touched) {
-            //_velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
-            //_velocity.x = 100;
-            //transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-            var direction = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x) * 0.5f, 0.5f);
-            _velocity = direction * 500;
+            _velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
+            _velocity.x = 100000000;
+            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            
             touched = false;
-            _controller.move(_velocity * Time.deltaTime);
-
-            // grab our current _velocity to use as a base for all calculations
-            _velocity = _controller.velocity;
             return;
         }
 
@@ -185,15 +184,6 @@ public class MonsterBehavior : MonoBehaviour {
 
         // apply gravity before moving
         _velocity.y += gravity * Time.deltaTime;
-
-        // if holding down bump up our movement amount and turn off one way platform detection for a frame.
-        // this lets us jump down through one way platforms
-        /*
-        if (_controller.isGrounded && Input.GetKey(KeyCode.DownArrow)) {
-            _velocity.y *= 3f;
-            _controller.ignoreOneWayPlatformsThisFrame = true;
-        }
-        */
 
         _controller.move(_velocity * Time.deltaTime);
 

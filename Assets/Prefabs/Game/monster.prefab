@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackDelay: 1
-  waitDuration: 1
+  waitDuration: 0.5
   moveDuration: 0.1
   attackRange: 64
 --- !u!114 &114391945398107776
