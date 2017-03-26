@@ -15,6 +15,8 @@ public class PlayerBehavior : MonoBehaviour {
 
     public float timeBetweenFart = 3f;
     public float damageReceiveInHealthPercentage = 10f;
+    public float powerBySecondInPercentage = 10f;
+    public float specialAttackPowerCostInPercentage = 50f;
 
     private float _nextFart;
     private float _nextHit;
@@ -45,21 +47,33 @@ public class PlayerBehavior : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.LeftControl)) {
+            if (!CanSuper())
+                return;
+
             _aSource.clip = specialFart;
             _aSource.Play();
+            powerBar.value -= specialAttackPowerCostInPercentage / 100;
         }
+
+        powerBar.value += powerBySecondInPercentage * Time.deltaTime / 100;
+        if (powerBar.value > 1)
+            powerBar.value = 1;
     }
 
     public void takeDamage() {
         if (Time.realtimeSinceStartup < _nextHit)
             return;
 
-        healthBar.value -= 0.1f;
+        healthBar.value -= damageReceiveInHealthPercentage / 100;
         if (healthBar.value <= 0) {
             Debug.Log("Game Over");
             Time.timeScale = 0f;
         }
 
         _nextHit = Time.realtimeSinceStartup + 1f;
+    }
+
+    public bool CanSuper() {
+        return powerBar.value >= specialAttackPowerCostInPercentage / 100;
     }
 }
