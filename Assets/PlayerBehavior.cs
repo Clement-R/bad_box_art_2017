@@ -41,12 +41,12 @@ public class PlayerBehavior : MonoBehaviour {
             _nextFart = currentTime + Random.Range(timeBetweenFart, timeBetweenFart + 2f);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
+        if (Input.GetButtonDown("B_gamepad")) {
             _aSource.clip = punch;
             _aSource.Play();
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftControl)) {
+        if (Input.GetButtonDown("Y_gamepad")) {
             if (!CanSuper())
                 return;
 
