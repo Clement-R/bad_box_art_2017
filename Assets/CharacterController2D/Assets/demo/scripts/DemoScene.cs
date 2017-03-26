@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Prime31;
-
+using UnityEngine.SceneManagement;
 
 public class DemoScene : MonoBehaviour {
     // movement config
@@ -20,10 +20,12 @@ public class DemoScene : MonoBehaviour {
     private Animator _animator;
     private RaycastHit2D _lastControllerColliderHit;
     private Vector3 _velocity;
+    private PlayerBehavior _player;
 
     void Awake() {
         _animator = GetComponent<Animator>();
         _controller = GetComponent<CharacterController2D>();
+        _player = GetComponent<PlayerBehavior>();
 
         // listen to some events for illustration purposes
         _controller.onControllerCollidedEvent += onControllerCollider;
@@ -66,72 +68,79 @@ public class DemoScene : MonoBehaviour {
 
     // the Update loop contains a very simple example of moving the character around and controlling the animation
     void Update() {
-        if (_controller.isGrounded)
-            _velocity.y = 0;
-
-        if (_animator.GetBool("special_attack")) {
-            _animator.SetBool("special_attack", false);
-        }
-
-        if (Input.GetAxisRaw("Horizontal") >= 0.1f) {
-        normalizedHorizontalSpeed = 1;
-        if (transform.localScale.x < 0f)
-            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-
-        if (_controller.isGrounded)
-            _animator.SetBool("run", true);
-        }
-        else if (Input.GetAxisRaw("Horizontal") <= -0.1f) {
-            normalizedHorizontalSpeed = -1;
-            if (transform.localScale.x > 0f)
-                transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-
+        if(_player.gameOver) {
+            if (Input.GetButtonDown("A_gamepad")) {
+                Time.timeScale = 1.0f;
+                SceneManager.LoadScene("main");
+            }
+        } else {
             if (_controller.isGrounded)
-                _animator.SetBool("run", true);
-        }
-        else {
-            normalizedHorizontalSpeed = 0;
+                _velocity.y = 0;
 
-            if (_controller.isGrounded)
+            if (_animator.GetBool("special_attack")) {
+                _animator.SetBool("special_attack", false);
+            }
+
+            if (Input.GetAxisRaw("Horizontal") >= 0.1f) {
+                normalizedHorizontalSpeed = 1;
+                if (transform.localScale.x < 0f)
+                    transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+
+                if (_controller.isGrounded)
+                    _animator.SetBool("run", true);
+            }
+            else if (Input.GetAxisRaw("Horizontal") <= -0.1f) {
+                normalizedHorizontalSpeed = -1;
+                if (transform.localScale.x > 0f)
+                    transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+
+                if (_controller.isGrounded)
+                    _animator.SetBool("run", true);
+            }
+            else {
+                normalizedHorizontalSpeed = 0;
+
+                if (_controller.isGrounded)
+                    _animator.SetBool("run", false);
+            }
+
+
+            // we can only jump whilst grounded
+            if (_controller.isGrounded && Input.GetButtonDown("A_gamepad")) {
+                _velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
                 _animator.SetBool("run", false);
-        }
-
-
-        // we can only jump whilst grounded
-        if (_controller.isGrounded && Input.GetButtonDown("A_gamepad")) {
-            _velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
-            _animator.SetBool("run", false);
-        }
-
-        if (Input.GetButtonDown("B_gamepad")) {
-            if (!_animator.GetBool("attack")) {
-                _animator.SetBool("attack", true);
-                isAttacking = true;
             }
-        }
 
-        if (Input.GetButtonDown("Y_gamepad")) {
-            var player = GetComponent<PlayerBehavior>();
-            if (!player.CanSuper())
-                return;
-
-            if (!_animator.GetBool("special_attack")) {
-                _animator.SetBool("special_attack", true);
-                isAttacking = true;
+            if (Input.GetButtonDown("B_gamepad")) {
+                if (!_animator.GetBool("attack")) {
+                    _animator.SetBool("attack", true);
+                    isAttacking = true;
+                }
             }
+
+            if (Input.GetButtonDown("Y_gamepad")) {
+                var player = GetComponent<PlayerBehavior>();
+                if (!player.CanSuper())
+                    return;
+
+                if (!_animator.GetBool("special_attack")) {
+                    _animator.SetBool("special_attack", true);
+                    isAttacking = true;
+                }
+            }
+
+            // apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
+            var smoothedMovementFactor = _controller.isGrounded ? groundDamping : inAirDamping; // how fast do we change direction?
+            _velocity.x = Mathf.Lerp(_velocity.x, normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor);
+
+            // apply gravity before moving
+            _velocity.y += gravity * Time.deltaTime;
+
+            _controller.move(_velocity * Time.deltaTime);
+
+            // grab our current _velocity to use as a base for all calculations
+            _velocity = _controller.velocity;
         }
-
-        // apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
-        var smoothedMovementFactor = _controller.isGrounded ? groundDamping : inAirDamping; // how fast do we change direction?
-        _velocity.x = Mathf.Lerp(_velocity.x, normalizedHorizontalSpeed * runSpeed, Time.deltaTime * smoothedMovementFactor);
-
-        // apply gravity before moving
-        _velocity.y += gravity * Time.deltaTime;
-
-        _controller.move(_velocity * Time.deltaTime);
-
-        // grab our current _velocity to use as a base for all calculations
-        _velocity = _controller.velocity;
     }
 
     void stopAttackAnimation() {

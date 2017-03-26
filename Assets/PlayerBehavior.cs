@@ -13,6 +13,12 @@ public class PlayerBehavior : MonoBehaviour {
     public Slider healthBar;
     public Slider powerBar;
 
+    public GameObject gameUI;
+    public GameObject gameOverScreen;
+    public GameObject gameOverScore;
+
+    public bool gameOver = false;
+
     public float timeBetweenFart = 3f;
     public float damageReceiveInHealthPercentage = 10f;
     public float powerBySecondInPercentage = 10f;
@@ -20,6 +26,7 @@ public class PlayerBehavior : MonoBehaviour {
 
     private float _nextFart;
     private float _nextHit;
+    private int _score = 0;
     
     private AudioSource _aSource;
 
@@ -66,7 +73,7 @@ public class PlayerBehavior : MonoBehaviour {
 
         healthBar.value -= damageReceiveInHealthPercentage / 100;
         if (healthBar.value <= 0) {
-            Debug.Log("Game Over");
+            GameOver();
             Time.timeScale = 0f;
         }
 
@@ -75,5 +82,16 @@ public class PlayerBehavior : MonoBehaviour {
 
     public bool CanSuper() {
         return powerBar.value >= specialAttackPowerCostInPercentage / 100;
+    }
+
+    void GameOver() {
+        // Pause game and hide UI
+        Time.timeScale = 0.0f;
+
+        // Show game over screen and set score
+        gameOverScore.GetComponent<Text>().text = "" + _score;
+        gameOverScreen.SetActive(true);
+
+        gameOver = true;
     }
 }
