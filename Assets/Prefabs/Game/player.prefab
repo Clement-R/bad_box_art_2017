@@ -260,6 +260,10 @@ MonoBehaviour:
   fart1: {fileID: 8300000, guid: 2c1edba071e6e6e4a892bbe683accca9, type: 3}
   fart2: {fileID: 8300000, guid: 373907b39c8107846a1c89e3156bc828, type: 3}
   specialFart: {fileID: 8300000, guid: 3829270210bf8ba46a8b462286fa97ee, type: 3}
+  healthBar: {fileID: 0}
+  powerBar: {fileID: 0}
+  timeBetweenFart: 3
+  damageReceiveInHealthPercentage: 10
 --- !u!212 &212892307374325040
 SpriteRenderer:
   m_ObjectHideFlags: 1
