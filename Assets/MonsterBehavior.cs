@@ -143,6 +143,7 @@ public class MonsterBehavior : MonoBehaviour {
             if (_controller.isGrounded)
                 _animator.SetBool("run", false);
         }
+        
 
 
         // we can only jump whilst grounded
@@ -158,7 +159,7 @@ public class MonsterBehavior : MonoBehaviour {
             isAttacking = true;
         }
 
-        if(touched) {
+        if (touched) {
             //_velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
             //_velocity.x = 100;
             //transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);

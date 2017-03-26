@@ -73,7 +73,7 @@ public class DemoScene : MonoBehaviour {
             _animator.SetBool("special_attack", false);
         }
 
-        if (Input.GetKey(KeyCode.RightArrow)) {
+        if (Input.GetAxisRaw("Horizontal") >= 0.1f) {
         normalizedHorizontalSpeed = 1;
         if (transform.localScale.x < 0f)
             transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -81,7 +81,7 @@ public class DemoScene : MonoBehaviour {
         if (_controller.isGrounded)
             _animator.SetBool("run", true);
         }
-        else if (Input.GetKey(KeyCode.LeftArrow)) {
+        else if (Input.GetAxisRaw("Horizontal") <= -0.1f) {
             normalizedHorizontalSpeed = -1;
             if (transform.localScale.x > 0f)
                 transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -98,19 +98,19 @@ public class DemoScene : MonoBehaviour {
 
 
         // we can only jump whilst grounded
-        if (_controller.isGrounded && Input.GetKeyDown(KeyCode.UpArrow)) {
+        if (_controller.isGrounded && Input.GetButtonDown("A_gamepad")) {
             _velocity.y = Mathf.Sqrt(2f * jumpHeight * -gravity);
             _animator.SetBool("run", false);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
+        if (Input.GetButtonDown("B_gamepad")) {
             if (!_animator.GetBool("attack")) {
                 _animator.SetBool("attack", true);
                 isAttacking = true;
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftControl)) {
+        if (Input.GetButtonDown("Y_gamepad")) {
             var player = GetComponent<PlayerBehavior>();
             if (!player.CanSuper())
                 return;
@@ -127,13 +127,6 @@ public class DemoScene : MonoBehaviour {
 
         // apply gravity before moving
         _velocity.y += gravity * Time.deltaTime;
-
-        // if holding down bump up our movement amount and turn off one way platform detection for a frame.
-        // this lets us jump down through one way platforms
-        if (_controller.isGrounded && Input.GetKey(KeyCode.DownArrow)) {
-            _velocity.y *= 3f;
-            _controller.ignoreOneWayPlatformsThisFrame = true;
-        }
 
         _controller.move(_velocity * Time.deltaTime);
 

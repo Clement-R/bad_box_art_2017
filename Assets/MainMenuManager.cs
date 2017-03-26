@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour {
 
     public GameObject menu;
     public GameObject credits;
+    public GameObject instructions;
     public GameObject[] menuItems;
     public Color32 usedColor;
 
@@ -52,7 +54,7 @@ public class MainMenuManager : MonoBehaviour {
                 Debug.Log("A");
 
                 if(menuItems[index].name == "Play") {
-                    Debug.Log("GO TO GAME");
+                    StartCoroutine("launchGame");
                 } else if(menuItems[index].name == "Credits") {
                     toggle();
                 }
@@ -75,5 +77,15 @@ public class MainMenuManager : MonoBehaviour {
             menu.SetActive(true);
             credits.SetActive(false);
         }
+    }
+
+    IEnumerator launchGame() {
+        menu.SetActive(false);
+        credits.SetActive(false);
+        instructions.SetActive(true);
+
+        yield return new WaitForSeconds(1.0f);
+
+        SceneManager.LoadScene("main");
     }
 }
