@@ -12,6 +12,8 @@ public class DemoScene : MonoBehaviour
 	public float inAirDamping = 5f;
 	public float jumpHeight = 3f;
 
+    bool isAttacking = false;
+
 	[HideInInspector]
 	private float normalizedHorizontalSpeed = 0;
 
@@ -30,7 +32,8 @@ public class DemoScene : MonoBehaviour
 		_controller.onControllerCollidedEvent += onControllerCollider;
 		_controller.onTriggerEnterEvent += onTriggerEnterEvent;
 		_controller.onTriggerExitEvent += onTriggerExitEvent;
-	}
+        _controller.onTriggerStayEvent += onTriggerStayEvent;
+    }
 
 
 	#region Event Listeners
@@ -48,20 +51,29 @@ public class DemoScene : MonoBehaviour
 
 	void onTriggerEnterEvent( Collider2D col )
 	{
-		Debug.Log( "onTriggerEnterEvent: " + col.gameObject.name );
+        // Debug.Log("onTriggerEnterEvent: " + col.gameObject.name);
 	}
 
 
 	void onTriggerExitEvent( Collider2D col )
 	{
-		Debug.Log( "onTriggerExitEvent: " + col.gameObject.name );
+		// Debug.Log( "onTriggerExitEvent: " + col.gameObject.name );
 	}
 
-	#endregion
+    void onTriggerStayEvent(Collider2D col) {
+        if (col.tag == "Enemy") {
+            if (isAttacking) {
+                Debug.Log("BOOM");
+                isAttacking = false;
+            }
+        }
+    }
+
+    #endregion
 
 
-	// the Update loop contains a very simple example of moving the character around and controlling the animation
-	void Update()
+    // the Update loop contains a very simple example of moving the character around and controlling the animation
+    void Update()
 	{
 		if( _controller.isGrounded )
 			_velocity.y = 0;
@@ -101,8 +113,10 @@ public class DemoScene : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.Space)) {
-            _animator.SetBool("attack", true);
-            StartCoroutine("stopAttack");
+            if(!_animator.GetBool("attack")) {
+                _animator.SetBool("attack", true);
+                isAttacking = true;
+            }
         }
 
         // apply horizontal speed smoothing it. dont really do this with Lerp. Use SmoothDamp or something that provides more control
@@ -126,8 +140,8 @@ public class DemoScene : MonoBehaviour
 		_velocity = _controller.velocity;
 	}
 
-    IEnumerator stopAttack() {
-        yield return new WaitForEndOfFrame();
+    void stopAttackAnimation() {
         _animator.SetBool("attack", false);
+        isAttacking = false;
     }
 }
