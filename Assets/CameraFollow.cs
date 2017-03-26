@@ -15,7 +15,6 @@ public class CameraFollow : MonoBehaviour {
         var current = gameObject.transform.position;
         var playerPos = _player.transform.position;
         var delta = playerPos.x - current.x;
-        Debug.Log(delta);
         if(Mathf.Abs(delta) > allowedDistance) {
             current.x = _player.transform.position.x - (Mathf.Sign(delta) * allowedDistance);
             gameObject.transform.position = current;
