@@ -17,6 +17,8 @@ public class PlayerBehavior : MonoBehaviour {
     public GameObject gameOverScreen;
     public GameObject gameOverScore;
 
+    public Text textDisplay;
+
     public bool gameOver = false;
 
     public float timeBetweenFart = 3f;
@@ -26,6 +28,7 @@ public class PlayerBehavior : MonoBehaviour {
 
     private float _nextFart;
     private float _nextHit;
+    private float _hideTextAt;
     private int _score = 0;
     
     private AudioSource _aSource;
@@ -37,14 +40,23 @@ public class PlayerBehavior : MonoBehaviour {
     public void Update() {
         var currentTime = Time.realtimeSinceStartup;
 
+        textDisplay.transform.localScale = gameObject.transform.localScale;
+
+        if (currentTime > _hideTextAt)
+            textDisplay.enabled = false;
+
         if (currentTime > _nextFart) {
             if (Random.Range(0, 2) == 1) {
                 _aSource.clip = fart1;
+                textDisplay.text = "I'm sorry...";
             }
             else {
                 _aSource.clip = fart2;
+                textDisplay.text = "It's so embarrassing...";
             }
             _aSource.Play();
+            textDisplay.enabled = true;
+            _hideTextAt = currentTime + 2f;
             _nextFart = currentTime + Random.Range(timeBetweenFart, timeBetweenFart + 2f);
         }
 
