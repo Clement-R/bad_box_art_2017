@@ -21,6 +21,7 @@ public class DemoScene : MonoBehaviour {
     private RaycastHit2D _lastControllerColliderHit;
     private Vector3 _velocity;
     private PlayerBehavior _player;
+    private bool canMove = true;
 
     void Awake() {
         _animator = GetComponent<Animator>();
@@ -57,7 +58,6 @@ public class DemoScene : MonoBehaviour {
     void onTriggerStayEvent(Collider2D col) {
         if (col.tag == "Enemy") {
             if (isAttacking) {
-                Debug.Log("BOOM");
                 isAttacking = false;
             }
         }
@@ -81,7 +81,7 @@ public class DemoScene : MonoBehaviour {
                 _animator.SetBool("special_attack", false);
             }
 
-            if (Input.GetAxisRaw("Horizontal") >= 0.1f) {
+            if (Input.GetAxisRaw("Horizontal") >= 0.1f && canMove) {
                 normalizedHorizontalSpeed = 1;
                 if (transform.localScale.x < 0f)
                     transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -89,7 +89,7 @@ public class DemoScene : MonoBehaviour {
                 if (_controller.isGrounded)
                     _animator.SetBool("run", true);
             }
-            else if (Input.GetAxisRaw("Horizontal") <= -0.1f) {
+            else if (Input.GetAxisRaw("Horizontal") <= -0.1f && canMove) {
                 normalizedHorizontalSpeed = -1;
                 if (transform.localScale.x > 0f)
                     transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -126,6 +126,8 @@ public class DemoScene : MonoBehaviour {
                 if (!_animator.GetBool("special_attack")) {
                     _animator.SetBool("special_attack", true);
                     isAttacking = true;
+                    canMove = false;
+                    StartCoroutine("startMoving");
                 }
             }
 
@@ -141,6 +143,11 @@ public class DemoScene : MonoBehaviour {
             // grab our current _velocity to use as a base for all calculations
             _velocity = _controller.velocity;
         }
+    }
+
+    IEnumerator startMoving() {
+        yield return new WaitForEndOfFrame();
+        canMove = true;
     }
 
     void stopAttackAnimation() {
