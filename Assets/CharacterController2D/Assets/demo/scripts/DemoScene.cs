@@ -111,6 +111,10 @@ public class DemoScene : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.LeftControl)) {
+            var player = GetComponent<PlayerBehavior>();
+            if (!player.CanSuper())
+                return;
+
             if (!_animator.GetBool("special_attack")) {
                 _animator.SetBool("special_attack", true);
                 isAttacking = true;
