@@ -32,6 +32,8 @@ public class MonsterBehavior : MonoBehaviour {
 
     private bool touched = false;
     private float _nextHit;
+    private bool _dead = false;
+    private float _diedAt;
 
     void Awake() {
         _animator = GetComponent<Animator>();
@@ -91,6 +93,7 @@ public class MonsterBehavior : MonoBehaviour {
         if(health <= 0){
             _controller.enabled = false;
             _ia.enabled = false;
+            _dead = true;
             var rb2D = GetComponent<Rigidbody2D>();
             _aSource.clip = death;
             _aSource.Play();
@@ -99,6 +102,7 @@ public class MonsterBehavior : MonoBehaviour {
             _animator.SetBool("attack", false);
             rb2D.AddForce(Vector2.up * 50000, ForceMode2D.Impulse);
             rb2D.AddTorque(90f);
+            _diedAt = Time.realtimeSinceStartup;
         }
 
         _nextHit = Time.realtimeSinceStartup + 1f;
@@ -106,6 +110,11 @@ public class MonsterBehavior : MonoBehaviour {
 
     // the Update loop contains a very simple example of moving the character around and controlling the animation
     void Update() {
+        if(_dead && Time.realtimeSinceStartup > _diedAt + 2f) {
+            GameObject.Destroy(gameObject);
+            return;
+        }
+
         if (!_controller.enabled)
             return;
 
@@ -188,5 +197,9 @@ public class MonsterBehavior : MonoBehaviour {
     void stopAttackAnimation() {
         _animator.SetBool("attack", false);
         isAttacking = false;
+    }
+
+    public bool IsDead() {
+        return _dead;
     }
 }
