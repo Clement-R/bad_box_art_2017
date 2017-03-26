@@ -7,6 +7,8 @@ public class Spawner : MonoBehaviour {
     // Spawn n monsters as soon as the previous n monsters have died.
     public int numberBySpawn;
     public GameObject monsterPrefab;
+    public GameObject leftBound;
+    public GameObject rightBound;
 
     private List<GameObject> liveMonsters;
 
@@ -16,8 +18,10 @@ public class Spawner : MonoBehaviour {
 	
 	void Update () {
 		if(liveMonsters.Count == 0) {
-            for(var i = 0; i < numberBySpawn; i++) {
-                liveMonsters.Add(GameObject.Instantiate(monsterPrefab, gameObject.transform.position, Quaternion.identity));
+            if (gameObject.transform.position.x > leftBound.transform.position.x && gameObject.transform.position.x < rightBound.transform.position.x) {
+                for(var i = 0; i < numberBySpawn; i++) {
+                    liveMonsters.Add(GameObject.Instantiate(monsterPrefab, gameObject.transform.position, Quaternion.identity));
+                }
             }
         }
         else {
