@@ -126,8 +126,6 @@ public class DemoScene : MonoBehaviour {
                 if (!_animator.GetBool("special_attack")) {
                     _animator.SetBool("special_attack", true);
                     isAttacking = true;
-                    canMove = false;
-                    StartCoroutine("startMoving");
                 }
             }
 
@@ -143,11 +141,6 @@ public class DemoScene : MonoBehaviour {
             // grab our current _velocity to use as a base for all calculations
             _velocity = _controller.velocity;
         }
-    }
-
-    IEnumerator startMoving() {
-        yield return new WaitForEndOfFrame();
-        canMove = true;
     }
 
     void stopAttackAnimation() {
